@@ -1,0 +1,218 @@
+#!/bin/bash
+
+#Author: John Dennehy (20091408)
+
+#This script creates a 'ContactDetails' file if it doesn't already exist and adds a customer to that file
+
+#If the ContactDetails file has not been created
+if [[ !  -f ContactDetails ]]  
+    then 
+    #create the ContactDetails file
+    touch ContactDetails
+fi
+
+#Print the options to the user (1 to enter name of contact to be added, 2 to return to main menu)
+printf "\n1.Enter name\n2.Return to Main Menu\n\n"
+
+#Reading the input of the user
+read -p "Menu Option: " nameMenuDecision
+
+#Until loop in place to ensure the user enters 1 or 2
+until [[ "$nameMenuDecision" =~ ^[1-2]{1,1}+$ ]];
+    do
+    printf "\nInvalid Input\n"
+    read -p "Please enter 1 or 2 to select a valid option: " nameMenuDecision
+done
+ 
+#If they enter 2 (return to main menu)
+if [[  "$nameMenuDecision" == "2" ]]
+    then 
+    #Menu script is executed to bring the user back to the main menu
+    bash ./Menu
+    exit
+
+#If they enter 1 (to add the contact's name)
+elif [[ "$nameMenuDecision" == "1" ]]
+    then
+    #Contact name is provided by the user
+    read -p "Enter name: " name
+fi;
+    
+    #While loop in place to ensure that the user only enters letters and a space is included (to ensure that they provide first and last names)
+    while [[ ! "$name" =~ ^[A-Za-z]{1,}+[\ \t][A-Za-z\'-]{3,}+$ ]];
+        do
+        printf "\nInvalid Input\n"
+        read -p "Please enter your first and last name, separated by a space: " name;
+    done
+
+#Print options to the user (1 to enter address of contact to be added, 2 to return to main menu)
+printf "\n1.Enter address\n2.Return to Main Menu\n\n"
+
+#Reading user input
+read -p "Menu Option: " addressMenuDecision
+
+#Until loop in place to ensure that the user enters 1 or 2
+until  [[ "$addressMenuDecision" =~ ^[1-2]{1,1}+$ ]];
+    do
+    printf "\nInvalid Input\n"
+    read -p "Please enter 1 or 2 to select a valid option: " addressMenuDecision;
+done
+
+#If they enter 2 (to return to main menu)
+if [[ "$addressMenuDecision" == "2" ]]
+    then
+    #Menu script is executed to display the main menu to the user
+    bash ./Menu
+    exit
+
+#If they enter 1 (to enter the contact's address)
+elif [[ "$addressMenuDecision" == "1" ]]
+    then
+    #Contact address is provided by the user
+    read -p "Enter address: " address
+fi;
+    
+    #While loop ensures that the user only enters letters and numbers. Space is mandatory to ensure that user enters at least 2 parts of an address
+    while [[ ! "$address" =~ ^[A-Za-z0-9\ \t\'\-\,\.\]{7,}+$ ]];
+        do
+	printf "\nInvalid Input\n"
+        read -p "Please provide a valid address: " address
+    done
+
+#Print options to the user (1 to enter mobile number of contact to be added, 2 to return to main menu)
+printf "\n1.Enter mobile number\n2.Return to Main Menu\n\n" 
+
+#Reading user input
+read -p "Menu Option: " phoneMenuDecision
+
+#Until loop in place to ensure that the user enters 1 or 2
+until  [[ "$phoneMenuDecision" =~ ^[1-2]{1,1}+$ ]];
+    do
+    printf "\nInvalid Input\n"
+    read -p "Please enter 1 or 2 to select a valid option: " phoneMenuDecision
+done
+
+#If they enter 2 (return to main menu)
+if [[ "$phoneMenuDecision" == "2" ]]
+    then
+    #Menu script is exectuted to display the main menu to the user
+    bash ./Menu
+    exit
+
+#If they enter 1 (to enter the phone number of the contact)
+elif [[ "$phoneMenuDecision" == "1" ]]
+    then
+    #Phone number is provided by the user
+    read -p "Enter mobile number: " mobileNumber
+fi;
+
+    #Until loop used to ensure that only numbers are entered. Space is mandatory and it must be at least 8 numbers long
+    until [[ "$mobileNumber" =~ ^[0-9\ \t]{8,}$ ]];
+        do
+	printf "\nInvalid Input\n"
+        read -p "Please ensure that all characters inputted are numbers: " mobileNumber;
+    done
+
+#Print options to the user (1 to enter email address of contact to be added, 2 to return to main menu
+printf "\n1.Enter email address\n2.Return to Main Menu\n\n"
+
+#Reading user input
+read -p "Menu Option: " emailMenuDecision
+
+#Until loop in place to ensure that the user enters 1 or 2
+until [[ "$emailMenuDecision" =~ ^[1-2]{1,1}+$ ]]
+    do
+    printf "\nInvalid Input\n"
+    read -p "Please enter 1 or 2 to select a valid option: " emailMenuDecision
+done;
+
+#If they enter 2 (to return to main menu)
+if [[ "$emailMenuDecision" == "2" ]]
+    then
+    #Menu script is executed to display the main menu to the user
+    bash ./Menu
+    exit
+
+#If they enter 1 (to enter the email address of the contact to be added)
+elif [[ "$emailMenuDecision" == "1" ]]
+    then
+    #Email is provided by the user
+    read -p "Enter email address: " email
+fi;
+
+
+#Case statement to check if valid email has been provided (presence of @)
+case "$email" in
+    *@*)
+        ;;
+    *)
+	printf "\nInvalid Input\n"
+        read -p "Please provide a valid email address: " email;;
+esac
+
+#Details inputted by the user are ouputted to the console
+printf "\n"
+printf "%0s %40s" "Name:  " "$name" 
+printf "\n"
+printf "%0s %40s" "Address:" "$address"
+printf "\n"
+printf "%0s %40s" "Number: " "$mobileNumber" 
+printf "\n"
+printf "%0s %40s" "Email:  " "$email"
+printf "\n\n"
+
+#User is prompted to review the details
+printf "Are the above details correct(Yes/No)?\n"
+read -p "Response:  " reviewContactDetails
+
+#Case statement to check if details are correct or not
+case $reviewContactDetails in
+    #if the user provides any combination of letters to indicate details are correct
+    [yY] | [yY][eE][sS] )
+        #User details are redirected to ContactDetails file (| delimiter)
+        echo "$name" "|" "$address" "|" "$mobileNumber" "|" "$email" "|" "$timeStamp" >> ContactDetails
+        #User is informed that details have been added
+        printf "\nContact Details successfully added\n"
+        ;;
+    #if the user provides any combination of letters to indicate details are incorrect
+    [nN] | [nN][oO] )
+        #User is informed that details were not added
+        printf "\nUser details not added\n"
+        #Menu script is executed to display the main menu to the user
+        bash ./Menu
+        exit
+        ;;
+    #Default is that message is outputted to the user that details were not added to the system.
+    *)
+        printf "\nInvalid Input. Contact Details were not added to the system.\n"
+        bash ./Menu
+        ;;
+esac
+
+#Submenu is displayed to the user (1 to add another contact, 2 to return to main menu)
+printf "\nPlease enter one of the following numbers to proceed.\n1.Add another contact\n2.Return to Main Menu\n"
+
+#User input is read
+read -p "Menu Option: " mainMenuDecision
+
+#Until loop in place to ensure that the user selects a valid option (1 or 2)
+until [[ "$mainMenuDecision" =~ ^[1-2]+$ ]]
+    do
+    printf "\nInvalid Input\n"
+    read -p "Please enter 1 or 2 to select a valid option: " mainMenuDecision
+done;
+
+#If they enter 2 (to return to main menu)
+if [[ "$mainMenuDecision" == "2" ]]
+    then
+    #Menu script is executed to display the main menu to the user
+    bash ./Menu
+    exit
+
+#If they enter 1 (to add another contact)
+elif [[ "$mainMenuDecision" == "1" ]]
+    then
+    #AddContact script is rerun to allow the user to add another contact
+    bash ./AddContact
+    exit
+fi;

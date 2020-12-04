@@ -1,0 +1,192 @@
+#!/bin/bash
+
+#Author: John Dennehy (20091408)
+
+#The purpose of this script is to allow users to search for an existing contact based upon any of that contacts personal information
+
+#Menu options are outputted to the user
+#1 Allows users to search contacts by name
+#2 Allows users to search contacts by address
+#3 Allows users to search contacts by phone number
+#4 Allows users to search contacts by email address
+#5 Allows users to return to main menu
+printf  "\nPlease choose one of the following:\n1. Search by Name\n2. Search by address\n3. Search by mobile phone number\n4. Search by email address\n5. Return to Main Menu\n\n"
+
+#User input is read
+read -p "Please enter one of the numbers above: " subMenuOption
+
+#Until loop in place to ensure that user provide valid input (1-5)
+until [[ "$subMenuOption" =~ ^[1-5]{1,1}+$ ]] 
+    do
+    printf "\nInvalid Input\n"
+    read -p "Please enter a number between 1 and 5 to select a valid option: " subMenuOption
+done
+
+#Case statement in place to manage options
+case $subMenuOption in
+    1) 
+        #User is prompted to provide name of contact that they want to search for
+        read -p "Please enter the user name that you want to search for: " userName
+        #If input is not blank
+        if [[ "$userName" != "" ]]
+            then
+            
+            #Bash variable to check the number of matches in the ContactDetails file (case insensitive search of names)
+            num_matches_name=$(cut -d'|' -f1 ContactDetails | grep -i -c "$userName")
+            
+            #If the number of matches is greater than 0 and the userName provided is not blank
+            if [[ "$num_matches_name" != "0" ]] && [[ "$userName" != "" ]]
+                then
+                
+                #Print how many matches were found
+                printf "\n$num_matches_name result(s) found.\n\n"
+                
+                #bash variable used to store matches of name
+                nameSearchMatch=$(cut -d'|' -f1 ContactDetails | grep -i "$userName")
+                
+                #A combination of grep and awk are used to output the details of the contact matches to the console
+                grep "$nameSearchMatch" ContactDetails | awk -F"|" '{printf "%10s %20s %10s %50s %10s %10s %10s %10s\n", " Name:", $1," Address:",$2," Mobile Number:",$3," Email:",$4}'
+            else 
+                #If no matches were found, user is informed
+                printf "\nNo matches found for that name.\n"
+            fi
+        else 
+            #If user did not provide any input (blank entry), they are informed that they need to enter some characters to complete a search
+            printf "\nYou did not enter any characters. Please enter some input to complete a valid search\n"
+        fi
+        ;;
+
+    2) 
+        #User is prompted to provide address of contact that they want to search for
+        read -p "Please enter an address: " userAddress
+        
+        #If input is not blank
+        if [[ "$userAddress" != "" ]]
+            then
+            
+            #Bash variable to check the number of matches in the COntactDetails file (case insensitive search of addresses)
+            num_matches_address=$(cut -d'|' -f2 ContactDetails | grep -i -c "$userAddress")
+
+            #If the number of matches is greater than 0 and the address provided is not blank
+            if [[ "$num_matches_address" != "0" ]] && [[ "$userAddress" != "" ]]
+                then
+                
+                #Print how many matches were found
+                printf "\n$num_matches_address result(s) found.\n\n"
+                
+                #Bash variable used to store address matches
+                addressSearchMatch=$(cut -d'|' -f2 ContactDetails | grep -i "$userAddress")
+                
+                #A combination of grep and awk are used to output the details of the contact matches to the console
+                grep "$addressSearchMatch" ContactDetails | awk -F"|" '{printf "%10s %20s %10s %50s %10s %10s %10s %10s\n", " Name:", $1," Address:",$2," Mobile Number:",$3," Email:", $4}'
+            else
+                #If no matches were found, user is informed
+                printf "\nNo matches found for that address.\n"
+            fi
+        else 
+            #If user did not provide any input (blank entry), they are informed that they need to enter some characters to complete a search
+            printf "\nYou did not enter any characters. Please enter some input to complete a valid search\n"
+        fi
+        ;;
+
+    3) 
+        #User is prompted to provide mobile phone number of contact that they want to search for
+        read -p "Please enter a mobile phone number: " userMobile
+
+        #If input is not blank
+        if [[ "$userMobile" != "" ]]
+            then
+            
+            #Bash variable to check the number of matches in the ContactDetails file
+            num_matches_mobile=$(cut -d'|' -f3 ContactDetails | grep -i -c "$userMobile")
+
+            #If the number of matches is greater than 0 and the phone number provided is not blank
+            if [[ "$num_matches_mobile" != "0" ]] && [[ "$userMobile" != "" ]]
+                then
+                
+                #Print how many matches were found
+                printf "\n$num_matches_mobile result(s) found.\n\n"
+                
+                #Bash variable used to store phone number matches
+                numberSearchMatch=$(cut -d'|' -f3 ContactDetails | grep -i "$userMobile")
+                
+                #A combination of grep and awk are used to output the details of the contact matches to the console
+                grep "$numberSearchMatch" ContactDetails | awk -F"|" '{printf "%10s %20s %10s %50s %10s %10s %10s %10s\n", "Name:", $1," Address: ", $2, " Mobile Number: ", $3, " Email: ", $4}'
+            else
+                #If no matches were found, user is informed
+                printf "\nNo matches found for that mobile number.\n"
+            fi
+        else
+            #If user did not provide any input (blank entry), they are informed that they need to enter some characters to complete a search
+            printf "\nYou did not enter any characters. Please enter some input to complete a valid search\n"
+        fi
+        ;;
+
+    4) 
+        #User is prompted to provide email address of contact that they want to search for
+        read -p "Please enter an email address: " userEmail
+        
+	#If input is not blank
+        if [[ "$userEmail" != "" ]]
+            then
+            
+            #Bash variable to check the number of matches in the ContactDetails file
+            num_matches_email=$(cut -d'|' -f4 ContactDetails | grep -i -c "$userEmail")
+
+            #If the number of matches is greater than 0 and the input provided by the user is not blank
+            if [[ "$num_matches_email" != "0" ]] && [[ "$userEmail" != "" ]]
+                then
+                
+                #Print the number of matches found
+                printf "\n$num_matches_email result(s) found.\n\n"
+                
+                #Bash variable used to store email matches
+                emailSearchMatch=$(cut -d'|' -f4 ContactDetails | grep -i "$userEmails")
+                
+                #A combination of grep and awk are used to output the details of the contact matches to the console
+                grep "$emailSearchMatch" ContactDetails | awk -F"|" '{printf "%10s %20s %10s %50s %10s %10s %10s %10s\n", "Name: ", $1," Address: ", $2, " Mobile Number: ", $3, " Email: ", $4}'
+            else
+                #If no matches were found, user is informed
+                printf "\nNo matches found for that email address.\n"
+            fi
+        else
+            #If user did not provide any input (blank entry), they are informed that they need to enter some characters to complete a search
+            printf "\nYou did not enter any characters. Please enter some input to complete a valid search\n"
+        fi
+        ;;
+    5)
+        #Menu script is executed to display the main menu to the user
+        bash ./Menu
+        exit
+        ;;
+esac
+
+#Message outputted to the console to inform user of submenu options 
+#1 to complete another search
+#2 to return to main menu
+printf "\n\nSearch completed. Please select a menu option to proceed:\n1. Search for another user\n2. Return to Main Menu\n"
+
+#User input is sought
+read -p "Menu Option: " mainMenuDecision
+
+#Until loop in place to make sure that the user provides valid input (1 or 2)
+until [[ "$mainMenuDecision" =~ ^[1-2]{1,1}+$ ]]
+    do
+    printf "\nInvalid Input\n"
+    read -p "Please input 1 or 2 to select a valid menu option: " mainMenuDecision
+done;
+
+#If they entered 1
+if [[ "$mainMenuDecision" == "2" ]]
+    then
+    #Menu script is executed to display the main menu to the user
+    bash ./Menu
+exit
+
+#If the entered 2
+elif [[ "$mainMenuDecision" == "1" ]]
+    then
+    #Search script is executed to allow the user to complete another search
+    bash ./Search
+    exit
+fi;

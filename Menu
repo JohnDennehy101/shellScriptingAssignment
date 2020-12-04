@@ -1,0 +1,126 @@
+#!/bin/bash
+
+#Author: John Dennehy (20091408)
+
+#This program allows the user to read a command line menu and from this, a user can select from any of the options presented and be brought to the appropriate script.
+
+#On launch, the menu options are displayed to the user
+echo -e  "\nWelcome. Please choose one of the following:\n1. Add a new Customer\n2. Remove an existing Customer\n3. Search for a Customer\n4. E-mail a Customer\n5. Exit\n"
+
+#The user is prompted to select an option by entering a number
+read -p "Please enter one of the numbers above: " menuOption
+
+#A while loop is used to ensure that the user enters a valid option (between 1 and 5). The loop executes continuously until the user enters a number between 1 and 5
+while [[ ! "$menuOption" =~ ^[1-5]{1,1}+$ ]]
+	do
+	read -p "Invalid Input. Please enter a number between 1 and 5 to select a valid option: "  menuOption
+done
+
+#A case statement is used to determine what file / process should be executed (based on the valid number that the user has inputted)
+#1 executes the AddContact file (to allow the user to add a contact to the system)
+#2 executes the remove file (allows the user to remove a user / multiple users from the system)
+#3 executes the search file (allows the user to search for a contact by each detail (name, address, phone number, email)
+#4 runs the process whereby the user can send a standard contact tracing email to an individual contact / all contacts )
+
+case $menuOption in
+
+	1) 	
+		./AddContact
+		;;
+	2) 	
+		./Remove
+		;;
+	3) 	
+		./Search
+		;;
+	4)
+        #The email sub menu is displayed to the user. 
+        #To email an individual contact, the user enters 1.
+        #To email all contacts in the ContactDetails file, the user enters 2 	
+        #To return to the main menu, the user enters 3
+        
+		printf "\nE-mail subMenu.\n\n1.Email Individual Customer\n2.Email All Customers\n3.Return to Main Menu\n\n"
+        
+        #Input is read from the user	   	
+        read -p "Please enter one of the above numbers: " emailSubMenu
+        
+		#An until loop is used to ensure that the user selects a valid option (1,2, or 3)
+		until [[ "$emailSubMenu" =~ ^[1-3]{1,1}+$ ]]
+			do
+			printf "\nInvalid input. Please enter 1, 2, or 3 to select a valid option: "
+			read -p emailSubMenu
+        done;
+
+		if [[ "$emailSubMenu" == "1" ]]
+			then
+            
+            #A grep search to capture all entries with lineNumbers (-n option) is completed of the ContactDetails file and this is piped to awk so that it can be outputted to the screen
+			grep -i -n "" ContactDetails | awk -F"|" '{print $1, "Address:",$2,"Phone Number",$3,"Email",$4}'
+            
+            #The user is prompted to enter the line number of the contact that they wish to email
+			printf "\nAll contacts are listed above.\n\n"
+			read -p "Enter the line number of the user that you wish to email: " lineNumber
+            
+            #A bash variable userLineNumbers captures the valid line numbers (via grep of ContactDetails file with -n option, piped to awk with : delimiter)
+			userLineNumbers=$(grep -i -n "" ContactDetails | awk -F":" '{print $1}')
+            
+            #validLineCheck establishes if a valid line number has been inputted (by piping userLineNumbers, completing a grep of the line number entered and piping that to a word count)  
+			validLineCheck=$(echo "$userLineNumbers" | grep "$lineNumber" | wc -l)
+
+            #If validLineCheck is not equal to zero, a match was found in ContactDetails and so the program continues
+			if [[ "$validLineCheck" != "0" ]]
+				then
+                
+                #The correct email is retrieved by using head and tail commands to get correct line of ContactDetails. Awk is then used (delimiter |) to print the 4th column (email)
+				individualEmail=$(head -n "$lineNumber" ContactDetails | tail -1 | awk -F"|" '{print $4}')
+                
+				#The email is then sent to the email address with the subject and body pre-defined. This makes the process very fast for the user of the program.
+                mail -s "COVID-19 Contact Tracing Notification" $individualEmail <<< "This is an automatic notification to inform you that you have been identified as a close contact of a confirmed Covid-19 case. Please self-isolate and book a test as soon as possible"
+                
+				#A notification is displayed to the user with the email address that was used for the email
+                echo -e "Email sent to $individualEmail"
+                
+				#The Menu script is recalled so that the user can select another option
+                bash ./Menu
+				exit
+                
+			elif [[ "$validLineCheck" == "0" ]]
+				then
+                
+				#If validLineCheck is equal to zero, a match was not found in ContactDetails. A message is outputted informing the user that an incorrect line number was provided
+                printf "\nIncorrect line number inputted. No user has been emailed.\n"
+                
+				#The Menu script is recalled so that the user can select another option
+                bash ./Menu
+				exit
+			fi;
+
+            #If emailSubMenu is equal to 2, the user has selected the option to email all contacts in the ContactDetails file.
+            elif [[ "$emailSubMenu" == "2" ]]
+                then
+                
+                #All emails are obtained by using awk | delimiter and printing the 4th column of the ContactDetails file.
+                #This is piped to xargs and then piped to sed which replaces the blank lines with commas. /g is used to complete this globally.
+                #The emails are then in the correct format for mailutils (e.g. jd@gmail.com, jd3@gmail.com)
+                allEmails=$(awk -F"|" '{print $4}' ContactDetails | xargs | sed 's/ /, /g' )
+                
+                #All emails contained in the allEmails bash variable are emailed with a pre-defined subject and body, making the process very easy for the user of the program.
+                mail -s "COVID-19 Contact Tracking Notification" $allEmails <<< "This is an automatic notification to inform you that you have been identified as a close contact of a confirmed Covid-19 case. Please self-isolate and book a Covid-19 test as soon as possible." 
+                
+                #A notification is displayed to the user with the email addresses that were sent a notification email
+                echo "Emails sent to $allEmails"
+                
+                #The Menu Script is recalled so that the user can select another option
+                bash ./Menu
+                exit
+                
+           #If emailSubMenu is equal to 3, the user has selected the option to return to the main menu.  
+           elif [[ "$emailSubMenu" == "3" ]]
+                then
+                bash ./Menu
+            fi;;
+    5) 
+        #If the user has entered 5 in the main menu, the program exits
+        exit
+        ;;
+esac
